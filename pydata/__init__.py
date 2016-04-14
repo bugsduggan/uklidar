@@ -6,6 +6,9 @@ import zipfile
 import requests
 
 
+MAX_RETRIES = 10
+
+
 def get_json_catalog(catalog_dir='catalog'):
     """
     This function looks in every json file in the catalog directory and splodges
@@ -30,11 +33,26 @@ def download_zip_file(url, directory='raw_data'):
 
     local_filename = '%s.zip' % url.split('/')[-1]
     local_filename = join(directory, local_filename)
-    r = requests.get(url, stream=True)
+    # setup a session to handle retries
+    session = requests.Session()
+    session.mount('http://',
+                  requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES))
+    session.mount('https://',
+                  requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES))
+
+    r = session.get(url, stream=True)
+    # handle basic HTTP errors
+    try:
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print >> sys.stderr, e.message()
+        raise e
+
     with open(local_filename, 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024): 
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
+
     return local_filename
 
 
