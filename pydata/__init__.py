@@ -1,6 +1,7 @@
 from json import loads
 from os import listdir, mkdir
 from os.path import isfile, join, isdir
+import sys
 import zipfile
 
 import requests
@@ -64,4 +65,6 @@ def unzip_file(filename):
     if not isdir(directory):
         mkdir(directory)
     with zipfile.ZipFile(filename, 'r') as f:
+        if f.testzip():
+            raise Exception('bad zip file')
         f.extractall(directory)
