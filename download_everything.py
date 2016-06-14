@@ -21,10 +21,32 @@
 
 from pydata import *
 
+
+MAX_RETRIES = 2
+
 catalog = get_json_catalog()
+for item in catalog:
+    item['retries'] = 0
+
 print 'Oh boy, going to download %d zip files' % len(catalog)
-for chunk in catalog:
-    print 'Fetching %s' % chunk['url'].split('/')[-1]
-    zip_file = download_zip_file(chunk['url'])
+while len(catalog) > 0:
+    chunk = catalog.pop(0)
+    fname = chunk['url'].split('/')[-1]
+    if chunk[retries] > MAX_RETRIES:
+        print 'Failing %s after %d attempts' % (fname, MAX_RETRIES)
+        continue
+    print 'Fetching %s' % fname
+
+    try:
+        zip_file = download_zip_file(chunk['url'])
+    except Exception:
+        chunk[retries] = chunk[retries] + 1
+        catalog.append(chunk)
+        continue
+
     print 'Unzipping %s' % zip_file
-    unzip_file(zip_file)
+    try:
+        unzip_file(zip_file)
+    except Exception:
+        chunk[retries] = chunk[retries] + 1
+        catalog.append(chunk)
