@@ -20,11 +20,49 @@
 # This code has taken 1.5 beers to produce
 
 from pydata import *
+tfile ='test.txt'
+done = True
 
-catalog = get_json_catalog()
-print 'Oh boy, going to download %d zip files' % len(catalog)
-for chunk in catalog:
-    print 'Fetching %s' % chunk['url'].split('/')[-1]
-    zip_file = download_zip_file(chunk['url'])
-    print 'Unzipping %s' % zip_file
-    unzip_file(zip_file)
+
+with open(tfile, 'w') as f:
+    catalog = get_json_catalog()
+    print 'Oh boy, going to download %d zip files' % len(catalog)
+    for chunk in catalog:
+        print 'Fetching %s' % chunk['url'].split('/')[-1]
+        zip_file = download_zip_file(chunk['url'])
+        print 'Unzipping %s' % zip_file
+        try:
+            raise Exception()
+            unzip_file(zip_file)
+        except:
+            print chunk['url']
+
+            f.write('%s\n' %chunk['url'])
+            done = False
+
+while not done:      
+    tfile2 = 'test2.txt'
+    with open(tfile, 'r') as f:
+        with open(tfile2, 'w') as f2:
+            lines =  f.readlines()
+            print line
+            if not lines:
+                done = True
+            else:
+                for line in lines:
+                    try:
+                        zip_file = download_zip_file(line)
+                        print 'Unzipping %s' % zip_file
+                        try:
+                            unzip_file(zip_file)
+                        except:
+                
+                            f2.write('%s\n' %line)
+    if done:
+        print 'all goood'
+    else:
+        tfile,tfile2 = tfile2,tfile
+                    
+                
+
+
