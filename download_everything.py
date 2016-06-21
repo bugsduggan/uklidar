@@ -32,7 +32,7 @@ print 'Oh boy, going to download %d zip files' % len(catalog)
 while len(catalog) > 0:
     chunk = catalog.pop(0)
     fname = chunk['url'].split('/')[-1]
-    if chunk[retries] > MAX_RETRIES:
+    if chunk['retries'] > MAX_RETRIES:
         print 'Failing %s after %d attempts' % (fname, MAX_RETRIES)
         continue
     print 'Fetching %s' % fname
